@@ -1,6 +1,10 @@
 #!/usr/bin/ruby
 
-if RUBY_PLATFORM =~ /linux/
+processor = `arch`.chomp
+
+if processor =~ /64/
+  executable = 'wkhtmltopdf_64bit'
+elsif RUBY_PLATFORM =~ /linux/
   executable = 'wkhtmltopdf_linux_386'
 elsif RUBY_PLATFORM =~ /darwin/
   executable = 'wkhtmltopdf_darwin_386'
