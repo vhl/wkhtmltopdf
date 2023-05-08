@@ -3,8 +3,10 @@ require 'wkhtmltopdf'
 
 processor = `arch`.chomp
 
-if processor =~ /64/
+if processor =~ /x86_64/
   executable = 'wkhtmltopdf_64bit'
+elsif processor =~ /aarch64/
+  executable = 'wkhtmltopdf_aarch64'
 elsif RUBY_PLATFORM =~ /linux/
   executable = 'wkhtmltopdf_linux_386'
 elsif RUBY_PLATFORM =~ /darwin/
