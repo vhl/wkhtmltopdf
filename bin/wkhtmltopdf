@@ -1,22 +1,30 @@
 #!/usr/bin/env ruby
 require 'wkhtmltopdf'
 
-processor = `arch`.chomp
+machine = `uname -m`.chomp
+linux = RUBY_PLATFORM.include?('linux')
+darwin = RUBY_PLATFORM.include?('darwin')
 
-if processor =~ /x86_64/
-  executable = 'wkhtmltopdf_64bit'
-elsif processor =~ /aarch64/
-  executable = 'wkhtmltopdf_aarch64'
-elsif RUBY_PLATFORM =~ /linux/
-  executable = 'wkhtmltopdf_linux_386'
-elsif RUBY_PLATFORM =~ /x86_64-darwin/
-  executable = 'wkhtmltopdf_darwin_64bit'
-elsif RUBY_PLATFORM =~ /darwin/
-  executable = 'wkhtmltopdf_darwin_386'
-else
-  raise "Invalid platform. Must be running linux or intel-based Mac OS."
-end
+executable =
+  if linux && %w[aarch64 arm64].include?(machine)
+    'wkhtmltopdf_aarch64'
+  elsif linux && %w[x86_64 amd64].include?(machine)
+    'wkhtmltopdf_64bit'
+  elsif linux
+    'wkhtmltopdf_linux_386'
+  elsif darwin && %w[x86_64 amd64].include?(machine)
+    'wkhtmltopdf_darwin_64bit'
+  elsif darwin
+    'wkhtmltopdf_darwin_386'
+  else
+    raise "Invalid platform. Must be running linux or intel-based Mac OS. " \
+          "(RUBY_PLATFORM=#{RUBY_PLATFORM.inspect}, uname -m=#{machine.inspect})"
+  end
 
 executable = File.join(File.dirname(__FILE__), executable)
-system(executable + " " + $*.join(" "))
+unless File.executable?(executable)
+  raise "wkhtmltopdf binary not found or not executable: #{executable} " \
+        "(RUBY_PLATFORM=#{RUBY_PLATFORM.inspect}, uname -m=#{machine.inspect})"
+end
 
+exec(executable, *ARGV)
